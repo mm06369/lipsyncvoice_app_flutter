@@ -28,7 +28,7 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
   List<dynamic> historyList = [];
 
   Future<void> getHistory(int userId) async {
-    String apiUrl = 'http://127.0.0.1:3000/get_history'; 
+    String apiUrl = 'http://127.0.0.1:5000/get_history'; 
     setState(() {
       isLoading = true;
     });

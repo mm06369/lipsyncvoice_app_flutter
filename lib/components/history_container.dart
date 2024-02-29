@@ -77,7 +77,7 @@ class _HistoryContainerState extends State<HistoryContainer> {
                  Padding(
                    padding: EdgeInsets.only(right:16),
                    child: SizedBox(
-                    width: 430,
+                    width: 380,
                      child: Text(
                         widget.message,
                         overflow: TextOverflow.ellipsis,

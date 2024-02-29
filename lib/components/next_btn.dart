@@ -5,12 +5,8 @@ import 'package:lipsyncvoice_app/screens/homepage.dart';
 class NextButton extends StatefulWidget {
   const NextButton(
       {super.key,
-      required this.username,
-      required this.password,
       required this.onPressed});
-  final String username;
-  final String password;
-  final Function(String, String) onPressed;
+  final Function() onPressed;
 
   @override
   State<NextButton> createState() => _NextButtonState();
@@ -28,36 +24,24 @@ class _NextButtonState extends State<NextButton> {
           setState(() {
             isLoading = true;
           });
-          await Future.delayed(const Duration(seconds: 2)).then((value) => {
+          final response = await widget.onPressed();
+          if (response['message'] == "Login successful"){
             setState(() {
-            isLoading = false; }),
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage(user_id : 1)))
+              isLoading = false;
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => HomePage(userId: response['user_id'],)));
+            });
+          }
+          else{
+            setState(() {
+            isLoading = false;
           });
-          
-          // final response = await widget.onPressed(widget.username, widget.password);
-          // if (response['message'] == "Login successful"){
-          //   setState(() {
-          //     isLoading = false;
-          //     Navigator.push(
-          //         context, MaterialPageRoute(builder: (_) => HomePage(user_id: response['user_id'],)));
-          //   });
-          // }
-          // else{
-          //   setState(() {
-          //   isLoading = false;
-          // });
-          // }
-          // if (response) {
-          //   setState(() {
-          //     isLoading = false;
-          //     Navigator.push(
-          //         context, MaterialPageRoute(builder: (_) => const HomePage()));
-          //   });
-          // }
-          // setState(() {
-          //   isLoading = false;
-          //   print(response['message']);
-          // });
+          }
+
+          setState(() {
+            isLoading = false;
+            print(response['message']);
+          });
         },
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(
