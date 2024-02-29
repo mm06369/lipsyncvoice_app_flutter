@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lipsyncvoice_app/screens/components/page_header.dart';
@@ -15,7 +14,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/addvid_btn.dart';
 import 'package:lipsyncvoice_app/components/contact_btn.dart';
 import 'package:open_file/open_file.dart';
-
 import '../utils/global_constants.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,112 +38,6 @@ class _HomePageState extends State<HomePage> {
   TextEditingController generatedTextController = TextEditingController();
 
   @override
-  void initState() {
-    _audioPlayer.setSourceUrl("assets/audio/speech.wav");
-    _audioPlayer.onPlayerComplete.listen((event) {
-      setState(() {
-        isPlaying = false;
-      });
-      print('Audio playback completed');
-    });
-    _audioPlayer.onPositionChanged.listen((event) {
-      setState(() {
-        audioDuration = event;
-      });
-    });
-
-    super.initState();
-  }
-
-  Future<void> _speak() async {
-    String text = generatedTextController.text;
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setPitch(1.0);
-    await flutterTts.speak(text);
-  }
-
-  Future<void> _stop() async {
-    await flutterTts.stop();
-  }
-
-  Future<void> _pause(bool val) async {
-    if (val) {
-      await _speak();
-      setState(() {
-        isPlaying = !isPlaying;
-      });
-    } else {
-      await flutterTts.pause();
-      setState(() {
-        isPlaying = !isPlaying;
-      });
-    }
-  }
-
-  void playAudio(bool play) {
-    if (play) {
-      _audioPlayer.play(UrlSource('assets/audio/speech.wav'));
-      setState(() {
-        isPlaying = true;
-      });
-    } else {
-      _audioPlayer.pause();
-      setState(() {
-        isPlaying = false;
-      });
-    }
-  }
-
-  resetStates() {
-    setState(() {
-      contactPressed = false;
-      showAdd = true;
-      isVideoProcess = false;
-      isVideoComplete = false;
-    });
-  }
-
-  contactOnPress() {
-    setState(() {
-      contactPressed = !contactPressed;
-    });
-  }
-
-  void uploadVideo(Uint8List videoData) async {
-    try {
-      final response = await ServiceHelper().runTest(videoData);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          isVideoComplete = true;
-          message = data['output'];
-          generatedTextController.text = message;
-          isVideoProcess = false;
-          createHistory('combined.mpg', message);
-        });
-      }
-    } catch (error) {
-      print(error.toString());
-    }
-  }
-
-  void createHistory(String name, String message_) async {
-    try {
-      final response =
-          await ServiceHelper().addMessage(name, message_, widget.userId);
-      if (response.statusCode == 200) {
-        print('Message added successfully');
-      } else {
-        print('Failed to add message');
-        print('Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -155,7 +47,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 10,
             ),
-            PageHeader(resetStates: resetStates,),
+            PageHeader(
+              resetStates: resetStates,
+            ),
             const SizedBox(
               height: 10,
             ),
@@ -174,42 +68,15 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          AddVideoButton(
-                            icon: Icons.add_circle,
-                            btnName: "Upload Video",
-                            onPressed: () async {
-                              await ImagePickerWeb.getVideoAsBytes()
-                                  .then((value) => {
-                                        setState(() {
-                                          showAdd = false;
-                                          isVideoProcess = true;
-                                        }),
-                                        uploadVideo(value!)
-                                      });
-                            },
-                          ),
+                          columnAddVideoButton(),
                           const SizedBox(
                             height: 10,
                           ),
-                          AddVideoButton(
-                            icon: Icons.history,
-                            btnName: "View History",
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => ViewHistoryPage(
-                                            userId: widget.userId,
-                                          )));
-                            },
-                          ),
+                          historyButton(),
                           const SizedBox(
                             height: 10,
                           ),
-                          ContactButton(
-                              btnName: "Contact Us",
-                              onPressed: contactOnPress,
-                              isPressed: contactPressed),
+                         contactButton(),
                           const SizedBox(
                             height: 10,
                           ),
@@ -239,6 +106,44 @@ class _HomePageState extends State<HomePage> {
 
   void openFile(PlatformFile file) {
     OpenFile.open(file.path);
+  }
+
+  Widget contactButton() {
+    return ContactButton(
+        btnName: "Contact Us",
+        onPressed: contactOnPress,
+        isPressed: contactPressed);
+  }
+
+  Widget historyButton() {
+    return AddVideoButton(
+      icon: Icons.history,
+      btnName: "View History",
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => ViewHistoryPage(
+                      userId: widget.userId,
+                    )));
+      },
+    );
+  }
+
+  Widget columnAddVideoButton() {
+    return AddVideoButton(
+      icon: Icons.add_circle,
+      btnName: "Upload Video",
+      onPressed: () async {
+        await ImagePickerWeb.getVideoAsBytes().then((value) => {
+              setState(() {
+                showAdd = false;
+                isVideoProcess = true;
+              }),
+              uploadVideo(value!)
+            });
+      },
+    );
   }
 
   Widget uploadButton() {
@@ -319,7 +224,6 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         const Text("Generated Audio"),
-
         if (isVideoComplete)
           const SizedBox(
             height: 10,
@@ -351,5 +255,111 @@ class _HomePageState extends State<HomePage> {
             style: GoogleFonts.poppins(color: Colors.white))
       ],
     );
+  }
+
+  @override
+  void initState() {
+    _audioPlayer.setSourceUrl("assets/audio/speech.wav");
+    _audioPlayer.onPlayerComplete.listen((event) {
+      setState(() {
+        isPlaying = false;
+      });
+      print('Audio playback completed');
+    });
+    _audioPlayer.onPositionChanged.listen((event) {
+      setState(() {
+        audioDuration = event;
+      });
+    });
+
+    super.initState();
+  }
+
+  Future<void> _speak() async {
+    String text = generatedTextController.text;
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setPitch(1.0);
+    await flutterTts.speak(text);
+  }
+
+  // Future<void> _stop() async {
+  //   await flutterTts.stop();
+  // }
+
+  Future<void> _pause(bool val) async {
+    if (val) {
+      await _speak();
+      setState(() {
+        isPlaying = !isPlaying;
+      });
+    } else {
+      await flutterTts.pause();
+      setState(() {
+        isPlaying = !isPlaying;
+      });
+    }
+  }
+
+  void playAudio(bool play) {
+    if (play) {
+      _audioPlayer.play(UrlSource('assets/audio/speech.wav'));
+      setState(() {
+        isPlaying = true;
+      });
+    } else {
+      _audioPlayer.pause();
+      setState(() {
+        isPlaying = false;
+      });
+    }
+  }
+
+  resetStates() {
+    setState(() {
+      contactPressed = false;
+      showAdd = true;
+      isVideoProcess = false;
+      isVideoComplete = false;
+    });
+  }
+
+  contactOnPress() {
+    setState(() {
+      contactPressed = !contactPressed;
+    });
+  }
+
+  void uploadVideo(Uint8List videoData) async {
+    try {
+      final response = await ServiceHelper().runTest(videoData);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          isVideoComplete = true;
+          message = data['output'];
+          generatedTextController.text = message;
+          isVideoProcess = false;
+          createHistory('combined.mpg', message);
+        });
+      }
+    } catch (error) {
+      print(error.toString());
+    }
+  }
+
+  void createHistory(String name, String message_) async {
+    try {
+      final response =
+          await ServiceHelper().addMessage(name, message_, widget.userId);
+      if (response.statusCode == 200) {
+        print('Message added successfully');
+      } else {
+        print('Failed to add message');
+        print('Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 }
