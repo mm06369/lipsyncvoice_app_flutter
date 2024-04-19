@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:lipsyncvoice_app/screens/components/language_toggle.dart';
 import 'package:lipsyncvoice_app/screens/components/page_header.dart';
 import 'package:lipsyncvoice_app/screens/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/screens/view_history.dart';
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   late Duration fullDuration;
   FlutterTts flutterTts = FlutterTts();
   TextEditingController generatedTextController = TextEditingController();
+  String languageSelected = "None";
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +50,7 @@ class _HomePageState extends State<HomePage> {
               height: 10,
             ),
             PageHeader(
+              isHomepage: true,
               resetStates: resetStates,
             ),
             const SizedBox(
@@ -76,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(
                             height: 10,
                           ),
-                         contactButton(),
+                          contactButton(),
                           const SizedBox(
                             height: 10,
                           ),
@@ -90,6 +93,10 @@ class _HomePageState extends State<HomePage> {
                     flex: 5,
                     child: Column(
                       children: [
+                        if (showAdd)
+                          LanguageToggle(
+                            onPressed: updateLanguage,
+                          ),
                         if (showAdd) uploadButton(),
                         if (isVideoProcess) loadingIndicator(),
                         if (isVideoComplete) messageContainer(),
@@ -102,6 +109,11 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  void updateLanguage(String language) {
+    print(language);
+    languageSelected = language;
   }
 
   void openFile(PlatformFile file) {
@@ -135,15 +147,26 @@ class _HomePageState extends State<HomePage> {
       icon: Icons.add_circle,
       btnName: "Upload Video",
       onPressed: () async {
-        await ImagePickerWeb.getVideoAsBytes().then((value) => {
-              setState(() {
-                showAdd = false;
-                isVideoProcess = true;
-              }),
-              uploadVideo(value!)
-            });
+        await uploadVideoLogic();
       },
     );
+  }
+
+  uploadVideoLogic() async {
+    if (languageSelected == 'None') {
+            createDialog();
+          } else {
+            await ImagePickerWeb.getVideoAsBytes().then((value) => {
+                  setState(() {
+                    showAdd = false;
+                    isVideoProcess = true;
+                  }),
+                  if (languageSelected == 'Urdu')
+                    {uploadurduVideo(value!)}
+                  else
+                    {uploadenglishVideo(value!)}
+                });
+          }
   }
 
   Widget uploadButton() {
@@ -152,13 +175,7 @@ class _HomePageState extends State<HomePage> {
       height: 50,
       child: ElevatedButton.icon(
         onPressed: () async {
-          await ImagePickerWeb.getVideoAsBytes().then((value) => {
-                setState(() {
-                  showAdd = false;
-                  isVideoProcess = true;
-                }),
-                uploadVideo(value!)
-              });
+          await uploadVideoLogic();
         },
         icon: const Icon(Icons.add),
         label: const Text("Upload Video"),
@@ -243,16 +260,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget contactContainer() {
-    return Column(
+    return const Column(
       children: [
         Text(
-          "Muhammad: 03202907153",
-          style: GoogleFonts.poppins(color: Colors.white),
+          "If you have any queries, contact us at: ",
+          style: TextStyle(color: Colors.white),
         ),
-        Text("Faraz: 03323377681",
-            style: GoogleFonts.poppins(color: Colors.white)),
-        Text("Ronit: 03342542450",
-            style: GoogleFonts.poppins(color: Colors.white))
+        Text(
+          "lipsynvoice.fyp@gmail.com",
+          style: TextStyle(color: Colors.red),
+        )
       ],
     );
   }
@@ -329,9 +346,28 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void uploadVideo(Uint8List videoData) async {
+  void uploadenglishVideo(Uint8List videoData) async {
     try {
       final response = await ServiceHelper().runTest(videoData);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          isVideoComplete = true;
+          message = data['output'];
+          generatedTextController.text = message;
+          isVideoProcess = false;
+          // createHistory('combined.mpg', message);
+        });
+      }
+    } catch (error) {
+      print(error.toString());
+    }
+  }
+
+  void uploadurduVideo(Uint8List videoData) async {
+    print("here");
+    try {
+      final response = await ServiceHelper().runRomanTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -361,5 +397,31 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       print('Error: $e');
     }
+  }
+
+  createDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          buttonPadding: const EdgeInsets.all(20),
+          surfaceTintColor: Colors.black,
+          backgroundColor: Colors.white,
+          title: const Center(
+              child: Text(
+            "Select a language first!",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          )),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

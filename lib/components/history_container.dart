@@ -75,7 +75,7 @@ class _HistoryContainerState extends State<HistoryContainer> {
                 ),
                 
                  Padding(
-                   padding: EdgeInsets.only(right:16),
+                   padding: const EdgeInsets.only(right:130),
                    child: SizedBox(
                     width: 380,
                      child: Text(

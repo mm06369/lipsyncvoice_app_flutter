@@ -7,10 +7,13 @@ import "package:http/http.dart" as http;
 
 class ServiceHelper{
 
-  String apiURL = "http://localhost:5000/";
+  // String apiURL = "http://localhost:5000/";
+  String apiURL = "http://119.63.132.179:5000/";
   String runTestAPI = "runTest";
+  String runRomanAPI = "runRoman";
   String addMessageAPI = "add_message";
   String authenticateAPI = 'authenticate';
+  String getHistoryAPI = 'get_history?user_id=';
 
   runTest(Uint8List videoData) async {
     try{
@@ -19,6 +22,23 @@ class ServiceHelper{
           body: videoData,
           headers: {
             'Content-Type': 'video/mpg', 
+          },
+        );
+        return response;
+    }
+    on Exception catch(error){
+      rethrow;
+    }
+  }
+
+  runRomanTest(Uint8List videoData) async {
+    print('runroman called');
+    try{
+      final response = await http.post(
+          Uri.parse(apiURL + runRomanAPI),
+          body: videoData,
+          headers: {
+            'Content-Type': 'video/mp4', 
           },
         );
         return response;
@@ -61,5 +81,15 @@ class ServiceHelper{
       rethrow;
     }
 
+  }
+
+  getHistory(int userId) async {
+    try{
+      final response = await http.get(Uri.parse('$apiURL$getHistoryAPI$userId'));
+      return response;
+    }
+    on Exception catch(error){
+      rethrow;
+    }
   }
 }

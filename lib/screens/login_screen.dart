@@ -8,25 +8,18 @@ import 'package:lipsyncvoice_app/components/password_textfield.dart';
 import 'package:lipsyncvoice_app/screens/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<Map<String, dynamic>> signIn() async {
-    try {
-      final response = await ServiceHelper()
-          .authenticate(usernameController.text, passwordController.text);
-      Map<String, dynamic> responseBody = jsonDecode(response.body);
-      usernameController.text = "";
-      passwordController.text = "";
-      return responseBody;
-    } on Exception catch (error) {
-      print(error);
-      return {"message": "An error occurred"};
-    }
-  }
+  bool isSignIn = true;
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +53,11 @@ class LoginScreen extends StatelessWidget {
                               controller: passwordController,
                             ),
                             NextButton(
-                              onPressed: signIn,
-                            )
+                              isSign: isSignIn,
+                              onPressed: isSignIn ? signIn: signUp,
+                            ),
+                            const SizedBox(height: 20,),
+                            signUpPrompt()
                           ],
                         )),
                     bannerImage()
@@ -73,7 +69,67 @@ class LoginScreen extends StatelessWidget {
         ),
         bottomNavigationBar: bottomText());
   }
+
+    signUp() async {
+
+    }
+    
+
+    Future<Map<String, dynamic>> signIn() async {
+    try {
+      final response = await ServiceHelper()
+          .authenticate(usernameController.text, passwordController.text);
+      Map<String, dynamic> responseBody = jsonDecode(response.body);
+      usernameController.text = "";
+      passwordController.text = "";
+      return responseBody;
+    } on Exception catch (error) {
+      print(error);
+      return {"message": "An error occurred"};
+    }
+  }
+
+  Widget signUpPrompt(){
+   return Row(
+      mainAxisSize: MainAxisSize.min, 
+      children: [
+        Text(
+          "Don't have an account? ",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            color: Colors.black,
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              isSignIn = !isSignIn;
+            });
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero, 
+            minimumSize: Size.zero, 
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+          ),
+          child: Text(
+            isSignIn ? 'Sign up': 'Sign in',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: Colors.blue, 
+            ),
+          ),
+        ),
+      ],
+    );
 }
+
+
+}
+
+
+
 
 Widget headingText() {
   return Text(
@@ -110,6 +166,8 @@ Widget welcomeText() {
     ),
   ]);
 }
+
+
 
 Widget bottomText() {
   return Padding(

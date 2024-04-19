@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lipsyncvoice_app/screens/about_us.dart';
+import 'package:lipsyncvoice_app/screens/demo_page.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
 
+// ignore: must_be_immutable
 class PageHeader extends StatefulWidget {
   final Function()? resetStates;
+  bool isHomepage;
 
-  PageHeader({Key? key, this.resetStates}) : super(key: key);
+  PageHeader({Key? key, this.resetStates, this.isHomepage = false}) : super(key: key);
 
   @override
   State<PageHeader> createState() => _PageHeaderState();
@@ -28,16 +32,16 @@ class _PageHeaderState extends State<PageHeader> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "LipsSyncVoice.ai",
-              style: TextStyle(
+            Text(
+              widget.isHomepage ? "LipsSyncVoice.ai" : "About Us",
+              style: const TextStyle(
                   fontSize: 17,
                   color: Colors.white,
                   fontWeight: FontWeight.w500),
             ),
             Row(
               children: [
-                GestureDetector(
+                if (widget.isHomepage) GestureDetector(
                     onTap: () {
                       if (widget.resetStates != null) {
                         widget.resetStates!();
@@ -50,14 +54,18 @@ class _PageHeaderState extends State<PageHeader> {
                       Icons.restart_alt,
                       color: Colors.white,
                     )),
-                TextButton(
-                    onPressed: () {},
+                if (widget.isHomepage) TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AboutUsPage()));
+                    },
                     child: Text(
                       "About Us",
                       style: GoogleFonts.poppins(color: Colors.white),
                     )),
                 TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DemoPage()));
+                    },
                     child: Text(
                       "Demo",
                       style: GoogleFonts.poppins(color: Colors.white),

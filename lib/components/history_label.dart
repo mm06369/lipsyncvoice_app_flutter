@@ -37,7 +37,7 @@ class HistoryLabel extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 350),
+                padding: EdgeInsets.only(right: 450),
                 child: Text(
                   'Message',
                   style: TextStyle(color: Colors.white),

@@ -3,10 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/screens/homepage.dart';
 
 class NextButton extends StatefulWidget {
-  const NextButton(
+  NextButton(
       {super.key,
-      required this.onPressed});
+      required this.onPressed,
+      this.isSign = true
+      });
   final Function() onPressed;
+  bool isSign;
 
   @override
   State<NextButton> createState() => _NextButtonState();
@@ -21,27 +24,32 @@ class _NextButtonState extends State<NextButton> {
       padding: const EdgeInsets.only(top: 20),
       child: ElevatedButton(
         onPressed: () async {
-          setState(() {
-            isLoading = true;
-          });
-          final response = await widget.onPressed();
-          if (response['message'] == "Login successful"){
-            setState(() {
-              isLoading = false;
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => HomePage(userId: response['user_id'],)));
-            });
-          }
-          else{
-            setState(() {
-            isLoading = false;
-          });
-          }
+          Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => HomePage(userId: 1,)));
+            
+          // if (widget.isSign){
+          // setState(() {
+          //   isLoading = true;
+          // });
+          // final response = await widget.onPressed();
+          // if (response['message'] == "Login successful"){
+          //   setState(() {
+          //     isLoading = false;
+          //     Navigator.push(
+          //         context, MaterialPageRoute(builder: (_) => HomePage(userId: response['user_id'],)));
+          //   });
+          // }
+          // else{
+          //   setState(() {
+          //   isLoading = false;
+          // });
+          // }
 
-          setState(() {
-            isLoading = false;
-            print(response['message']);
-          });
+          // setState(() {
+          //   isLoading = false;
+          //   createDialog(response['message']);
+          // });
+          // }
         },
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(
@@ -57,7 +65,7 @@ class _NextButtonState extends State<NextButton> {
         ),
         child: !isLoading
             ? Text(
-                'Next',
+                widget.isSign ? 'Next': 'Sign Up',
                 style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 12.0,
@@ -73,4 +81,25 @@ class _NextButtonState extends State<NextButton> {
       ),
     );
   }
+
+  createDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          buttonPadding: const EdgeInsets.all(20),
+          surfaceTintColor: Colors.black,
+          backgroundColor: Colors.white,
+          title: Center(child: Text(message, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),)),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );}
 }
