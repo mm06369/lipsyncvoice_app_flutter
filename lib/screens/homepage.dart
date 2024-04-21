@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:lipsyncvoice_app/screens/components/language_toggle.dart';
-import 'package:lipsyncvoice_app/screens/components/page_header.dart';
-import 'package:lipsyncvoice_app/screens/logic/service_helper.dart';
+import 'package:http/http.dart';
+import 'package:lipsyncvoice_app/components/custom_message.dart';
+import 'package:lipsyncvoice_app/components/language_toggle.dart';
+import 'package:lipsyncvoice_app/components/page_header.dart';
+import 'package:lipsyncvoice_app/logic/service_helper.dart';
+import 'package:lipsyncvoice_app/screens/camera_screen__.dart';
 import 'package:lipsyncvoice_app/screens/view_history.dart';
+import 'package:lipsyncvoice_app/screens/webcam.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:universal_image_picker_web/image_picker_web.dart';
 import 'package:file_picker/file_picker.dart';
@@ -38,6 +43,8 @@ class _HomePageState extends State<HomePage> {
   FlutterTts flutterTts = FlutterTts();
   TextEditingController generatedTextController = TextEditingController();
   String languageSelected = "None";
+  // bool recordingDone = false;
+  bool showWebcam = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,13 +100,27 @@ class _HomePageState extends State<HomePage> {
                     flex: 5,
                     child: Column(
                       children: [
-                        if (showAdd)
+                        if (showWebcam)
+                          Webcam(
+                            onRecordingDone: languageSelected == 'Urdu' ? uploadurduVideo : uploadenglishVideo,
+                            onRecordingStart: onProcessStart,
+                          ),
+                        const SizedBox(height: 10,),
+                        if (showAdd && !showWebcam)
                           LanguageToggle(
+                            btnSelected: "None",
                             onPressed: updateLanguage,
                           ),
-                        if (showAdd) uploadButton(),
+                        if (showAdd && !showWebcam)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              uploadButton(),
+                              recordingButton(),
+                            ],
+                          ),
                         if (isVideoProcess) loadingIndicator(),
-                        if (isVideoComplete) messageContainer(),
+                        if (isVideoComplete) customMessageContainer(),
                         if (isVideoComplete) audioContainer(),
                       ],
                     ))
@@ -111,9 +132,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  onProcessStart(){
+    setState(() {
+      isVideoProcess = true;
+    });
+  }
+
+  getMessage(String message_){
+    setState(() {
+          isVideoComplete = true;
+          message = message_;
+          generatedTextController.text = message;
+          isVideoProcess = false;
+        });
+  }
+
   void updateLanguage(String language) {
-    print(language);
     languageSelected = language;
+    print(language);
   }
 
   void openFile(PlatformFile file) {
@@ -154,19 +190,19 @@ class _HomePageState extends State<HomePage> {
 
   uploadVideoLogic() async {
     if (languageSelected == 'None') {
-            createDialog();
-          } else {
-            await ImagePickerWeb.getVideoAsBytes().then((value) => {
-                  setState(() {
-                    showAdd = false;
-                    isVideoProcess = true;
-                  }),
-                  if (languageSelected == 'Urdu')
-                    {uploadurduVideo(value!)}
-                  else
-                    {uploadenglishVideo(value!)}
-                });
-          }
+      createDialog();
+    } else {
+      await ImagePickerWeb.getVideoAsBytes().then((value) => {
+            setState(() {
+              showAdd = false;
+              isVideoProcess = true;
+            }),
+            if (languageSelected == 'Urdu')
+              {uploadurduVideo(value!)}
+            else
+              {uploadenglishVideo(value!)}
+          });
+    }
   }
 
   Widget uploadButton() {
@@ -179,6 +215,33 @@ class _HomePageState extends State<HomePage> {
         },
         icon: const Icon(Icons.add),
         label: const Text("Upload Video"),
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.black),
+            foregroundColor: MaterialStateProperty.all(Colors.white),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                    side: const BorderSide(color: Colors.black)))),
+      ),
+    );
+  }
+
+  Widget recordingButton() {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          if (languageSelected == 'None') {
+            createDialog();
+          } else {
+            setState(() {
+              showWebcam = true;
+            });
+          }
+        },
+        icon: const Icon(Icons.record_voice_over),
+        label: const Text("Record Video"),
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Colors.black),
             foregroundColor: MaterialStateProperty.all(Colors.white),
@@ -237,10 +300,25 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget customMessageContainer(){
+     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+        Text(
+              "The person in the video is saying: ",
+              style: GoogleFonts.poppins(color: Colors.black, fontSize: 15),
+            ),
+          const SizedBox(height: 5,),
+         CustomMessageContainer(message: message),
+       ],
+     );
+  }
+
   Widget audioContainer() {
     return Column(
       children: [
-        const Text("Generated Audio"),
+        const SizedBox(height: 20,),
+        const Text("Generated Audio", style: TextStyle(fontSize: 25),),
         if (isVideoComplete)
           const SizedBox(
             height: 10,
@@ -333,10 +411,13 @@ class _HomePageState extends State<HomePage> {
 
   resetStates() {
     setState(() {
+      languageSelected = 'None';
+      showWebcam = false;
       contactPressed = false;
       showAdd = true;
       isVideoProcess = false;
       isVideoComplete = false;
+      // recordingDone = false;
     });
   }
 
@@ -359,6 +440,14 @@ class _HomePageState extends State<HomePage> {
           // createHistory('combined.mpg', message);
         });
       }
+      else if (response.statusCode != 200){
+        setState(() {
+          isVideoComplete = true;
+          message = "Was not able to determine what the person was saying";
+          generatedTextController.text = message;
+          isVideoProcess = false;
+        });
+      }
     } catch (error) {
       print(error.toString());
     }
@@ -366,6 +455,14 @@ class _HomePageState extends State<HomePage> {
 
   void uploadurduVideo(Uint8List videoData) async {
     print("here");
+    // final data = await ServiceHelper().runRomanTest(videoData);
+    //  setState(() {
+    //       isVideoComplete = true;
+    //       message = data['output'];
+    //       generatedTextController.text = message;
+    //       isVideoProcess = false;
+    //       createHistory('combined.mpg', message);
+    //     });
     try {
       final response = await ServiceHelper().runRomanTest(videoData);
       if (response.statusCode == 200) {
@@ -375,10 +472,24 @@ class _HomePageState extends State<HomePage> {
           message = data['output'];
           generatedTextController.text = message;
           isVideoProcess = false;
-          createHistory('combined.mpg', message);
+          // createHistory('combined.mpg', message);
+        });
+      }
+      else if (response.statusCode != 200){
+        setState(() {
+          isVideoComplete = true;
+          message = "Error: Was not able to determine what the person was saying";
+          generatedTextController.text = message;
+          isVideoProcess = false;
         });
       }
     } catch (error) {
+      setState(() {
+          isVideoComplete = true;
+          message = "Error: Was not able to determine what the person was saying";
+          generatedTextController.text = message;
+          isVideoProcess = false;
+        });
       print(error.toString());
     }
   }

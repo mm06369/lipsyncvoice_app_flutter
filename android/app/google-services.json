@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "779393698703",
+    "project_id": "lip-sync-voice",
+    "storage_bucket": "lip-sync-voice.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779393698703:android:fe490558213c3e7da6d9fa",
+        "android_client_info": {
+          "package_name": "com.example.lipsyncvoice_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5tWmPiy-b2cwKf2ddPmbhOJU_i_QohHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

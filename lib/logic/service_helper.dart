@@ -27,6 +27,7 @@ class ServiceHelper{
         return response;
     }
     on Exception catch(error){
+      print("error");
       rethrow;
     }
   }
@@ -43,8 +44,9 @@ class ServiceHelper{
         );
         return response;
     }
-    on Exception catch(error){
-      rethrow;
+    catch(error){
+      print(error);
+      return {'output': "error"};
     }
   }
 

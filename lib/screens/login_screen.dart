@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/auth_textfield.dart';
 import 'package:lipsyncvoice_app/components/next_btn.dart';
 import 'package:lipsyncvoice_app/components/password_textfield.dart';
-import 'package:lipsyncvoice_app/screens/logic/service_helper.dart';
+import 'package:lipsyncvoice_app/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
 
 class LoginScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/history_label.dart';
-import 'package:lipsyncvoice_app/screens/components/page_header.dart';
+import 'package:lipsyncvoice_app/components/page_header.dart';
 import 'package:lipsyncvoice_app/screens/login_screen.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
 

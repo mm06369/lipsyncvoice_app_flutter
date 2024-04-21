@@ -1,117 +1,158 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:html' as html;
+import 'dart:typed_data';
+import 'dart:ui_web' as ui;
+import 'dart:js' as js;
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:lipsyncvoice_app/logic/service_helper.dart';
 
-class CameraScreen extends StatefulWidget {
+class Camera extends StatefulWidget {
+
+  String language;
+  Camera({super.key, this.language = 'Urdu'});
+
   @override
-  _CameraScreenState createState() => _CameraScreenState();
+  State<Camera> createState() => _CameraState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
-  late CameraController controller;
-  bool isCameraOn = true;
+class _CameraState extends State<Camera> {
+  late html.VideoElement _preview;
+  late html.MediaRecorder _recorder;
+  late html.VideoElement _result;
 
-  getCameraAndInitialize() async {
-    List<CameraDescription> cameras = await availableCameras();
-    controller = CameraController(cameras[0], ResolutionPreset.low);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
-  }
-
-  void startRecording() async {
-    if (!controller.value.isRecordingVideo) {
-      final Directory appDirectory = await getApplicationDocumentsDirectory();
-      final String videoDirectory = '${appDirectory.path}/Videos';
-      await Directory(videoDirectory).create(recursive: true);
-      final String filePath = '$videoDirectory/${DateTime.now()}.mp4';
-
-      try {
-        await controller.startVideoRecording(
-          onAvailable: (image) {
-            print(image.toString());
-          },
-        );
-      } catch (e) {
-        print(e);
-      }
-    }
-  }
-
-  void stopRecording() async {
-    if (controller.value.isRecordingVideo) {
-      try {
-        await controller.stopVideoRecording();
-      } catch (e) {
-        print(e);
-      }
-    }
-  }
 
   @override
   void initState() {
+    print("initstate called in camera screen");
     super.initState();
-    getCameraAndInitialize();
+    _preview = html.VideoElement()
+      ..autoplay = true
+      ..muted = true
+      ..width = html.window.innerWidth!
+      ..height = html.window.innerHeight!;
+
+    ui.platformViewRegistry.registerViewFactory('preview', (int _) => _preview);
+
+
+    _result = html.VideoElement()
+      ..autoplay = false
+      ..muted = false
+      ..width = html.window.innerWidth!
+      ..height = html.window.innerHeight!
+      ..controls = true;
+
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory('result', (int _) => _result);
+
   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
+  Future<html.MediaStream?> _openCamera() async {
+    final html.MediaStream? stream = await html.window.navigator.mediaDevices
+        ?.getUserMedia({'video': true, 'audio': true});
+    _preview.srcObject = stream;
+    return stream;
   }
+
+  void startRecording(html.MediaStream stream) {
+    _recorder = html.MediaRecorder(stream);
+    _recorder.start();
+    _recorder.addEventListener('stop', (event) {
+      stream.getTracks().forEach((track) {
+        if (track.readyState == 'live') {
+          print("track stopped");
+          track.stop();
+        }
+      });
+    });
+    html.Blob blob = html.Blob([]);
+
+    _recorder.addEventListener('dataavailable', (event) {
+      blob = js.JsObject.fromBrowserObject(event)['data'];
+    }, true);
+
+    _recorder.addEventListener('stop', (event) {
+      final url = html.Url.createObjectUrl(blob);
+      _result.src = url;
+      print(url);
+
+      html.HttpRequest.request(url, responseType: 'blob')
+          .then((html.HttpRequest request) async  {
+        if (request.status == 200) {
+          // Convert the fetched blob into bytes
+          final reader = html.FileReader();
+          reader.readAsArrayBuffer(request.response);
+          reader.onLoadEnd.listen((event) async {
+            if (reader.readyState == html.FileReader.DONE) {
+              // Convert the array buffer to bytes
+              Uint8List bytes = Uint8List.fromList(reader.result as List<int>);
+              try {
+                final response = await ServiceHelper().runTest(bytes);
+                if (response.statusCode == 200) {
+                  final data = json.decode(response.body);
+                  setState(() {
+                    print("data: ${data['output']}");
+                    // isVideoComplete = true;
+                    // message = data['output'];
+                    // generatedTextController.text = message;
+                    // isVideoProcess = false;
+                    // createHistory('combined.mpg', message);
+                  });
+                }
+              } catch (error) {
+                print(error.toString());
+              }
+
+            }
+          });
+        }
+      });
+    });
+  }
+
+  void stopRecording() => _recorder.stop();
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Camera")),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text("Camera")),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            if (isCameraOn)
-              Center(
-                child: SizedBox(
-                  width: 600,
-                  height: 300,
-                  child: AspectRatio(
-                    aspectRatio: controller.value.aspectRatio,
-                    child: CameraPreview(controller),
-                  ),
-                ),
-              ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  isCameraOn = !isCameraOn;
-                });
-              },
-              child: Text(isCameraOn ? "Turn Camera Off" : "Turn Camera On"),
+      appBar: AppBar(
+        title: Text('Camera'),
+      ),
+      body: Column(
+        children: [
+          Container(
+            width: 300,
+            height: 200,
+            color: Colors.blue,
+            child: HtmlElementView(
+              key: UniqueKey(),
+              viewType: 'preview',
             ),
-            ElevatedButton(
-              onPressed: () {
-                if (isCameraOn) {
-                  startRecording();
-                } else {
-                  stopRecording();
-                }
-              },
-              child: Text(isCameraOn ? "Record" : "Stop Recording"),
+          ),
+          Container(
+            width: 300,
+            height: 200,
+            color: Colors.blue,
+            child: HtmlElementView(
+              key: UniqueKey(),
+              viewType: 'result',
             ),
-          ],
-        ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final html.MediaStream? stream = await _openCamera();
+              startRecording(stream!);
+            },
+            child: Text('Start Recording'),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          ElevatedButton(
+            onPressed: () => stopRecording(),
+            child: Text('Stop Recording'),
+          ),
+        ],
       ),
     );
   }
