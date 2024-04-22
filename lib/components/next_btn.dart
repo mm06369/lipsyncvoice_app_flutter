@@ -6,17 +6,18 @@ class NextButton extends StatefulWidget {
   NextButton(
       {super.key,
       required this.onPressed,
-      this.isSign = true
+      this.isSign = true,
+      this.isLoading = false
       });
   final Function() onPressed;
   bool isSign;
+  bool isLoading;
 
   @override
   State<NextButton> createState() => _NextButtonState();
 }
 
 class _NextButtonState extends State<NextButton> {
-  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +25,8 @@ class _NextButtonState extends State<NextButton> {
       padding: const EdgeInsets.only(top: 20),
       child: ElevatedButton(
         onPressed: () async {
-          Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => HomePage(userId: 1,)));
+          widget.onPressed();
+  
             
           // if (widget.isSign){
           // setState(() {
@@ -63,7 +64,7 @@ class _NextButtonState extends State<NextButton> {
             ),
           ),
         ),
-        child: !isLoading
+        child: !widget.isLoading
             ? Text(
                 widget.isSign ? 'Next': 'Sign Up',
                 style: GoogleFonts.poppins(

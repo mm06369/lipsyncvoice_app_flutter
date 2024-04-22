@@ -4,15 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/history_container.dart';
 import 'package:lipsyncvoice_app/components/history_label.dart';
+import 'package:lipsyncvoice_app/logic/database_helper.dart';
+import 'package:lipsyncvoice_app/logic/model/history_model.dart';
 import 'package:lipsyncvoice_app/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/screens/login_screen.dart';
 import 'package:http/http.dart' as http;
 import '../utils/global_constants.dart';
 
 class ViewHistoryPage extends StatefulWidget {
+  final String userId;
   const ViewHistoryPage({super.key, required this.userId});
 
-  final int userId;
   @override
   State<ViewHistoryPage> createState() => _ViewHistoryPageState();
 }
@@ -20,32 +22,23 @@ class ViewHistoryPage extends StatefulWidget {
 class _ViewHistoryPageState extends State<ViewHistoryPage> {
   bool arrowPressed = false;
   bool isLoading = false;
-  List<dynamic> historyList = [];
+  List<HistoryModel> historyList = [];
 
-  Future<void> getHistory(int userId) async {
+  getHistoryLst() async {
     setState(() {
       isLoading = true;
     });
-    try {
-      final response = await ServiceHelper().getHistory(userId);
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseBody = jsonDecode(response.body);
-        historyList = responseBody['history'];
-      } else {
-        print("Failed to fetch history List");
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
+    historyList = await DatabaseHelper().getHistory(widget.userId);
     setState(() {
       isLoading = false;
     });
+    // }
   }
-
+  
   @override
   void initState() {
-    getHistory(widget.userId);
     super.initState();
+    getHistoryLst();
   }
 
   @override
@@ -82,9 +75,9 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
           itemBuilder: (context, index) {
             return HistoryContainer(
                 serial: index,
-                videoName: historyList[index]['name'],
-                message: historyList[index]['message'],
-                date: historyList[index]['date']);
+                // videoName: historyList[index]['name'],
+                text: historyList[index].text ?? "Error",
+                date: historyList[index].dateAdded ?? "Error");
           }),
     );
   }

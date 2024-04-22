@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:lipsyncvoice_app/components/custom_message.dart';
 import 'package:lipsyncvoice_app/components/language_toggle.dart';
 import 'package:lipsyncvoice_app/components/page_header.dart';
+import 'package:lipsyncvoice_app/logic/database_helper.dart';
 import 'package:lipsyncvoice_app/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/screens/camera_screen__.dart';
 import 'package:lipsyncvoice_app/screens/view_history.dart';
@@ -24,7 +25,7 @@ import '../utils/global_constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.userId});
-  final int userId;
+  final String userId;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -134,6 +135,7 @@ class _HomePageState extends State<HomePage> {
 
   onProcessStart(){
     setState(() {
+      isVideoComplete = false;
       isVideoProcess = true;
     });
   }
@@ -432,6 +434,7 @@ class _HomePageState extends State<HomePage> {
       final response = await ServiceHelper().runTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        await DatabaseHelper().addMessage(widget.userId, data['output']);
         setState(() {
           isVideoComplete = true;
           message = data['output'];
@@ -454,25 +457,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void uploadurduVideo(Uint8List videoData) async {
-    print("here");
-    // final data = await ServiceHelper().runRomanTest(videoData);
-    //  setState(() {
-    //       isVideoComplete = true;
-    //       message = data['output'];
-    //       generatedTextController.text = message;
-    //       isVideoProcess = false;
-    //       createHistory('combined.mpg', message);
-    //     });
     try {
       final response = await ServiceHelper().runRomanTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        await DatabaseHelper().addMessage(widget.userId, data['output']);
         setState(() {
           isVideoComplete = true;
           message = data['output'];
           generatedTextController.text = message;
           isVideoProcess = false;
-          // createHistory('combined.mpg', message);
         });
       }
       else if (response.statusCode != 200){
@@ -494,21 +488,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void createHistory(String name, String message_) async {
-    try {
-      final response =
-          await ServiceHelper().addMessage(name, message_, widget.userId);
-      if (response.statusCode == 200) {
-        print('Message added successfully');
-      } else {
-        print('Failed to add message');
-        print('Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
 
   createDialog() {
     showDialog(

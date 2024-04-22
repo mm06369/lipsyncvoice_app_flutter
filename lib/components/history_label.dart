@@ -20,31 +20,31 @@ class HistoryLabel extends StatelessWidget {
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
                Padding(
-                 padding: EdgeInsets.only(right: 150),
+                 padding: EdgeInsets.only(right: 200),
                  child: Text(
                     'S.No',
                     style: TextStyle(color: Colors.white),
                   ),
                ),
+              // Padding(
+              //   padding: EdgeInsets.only(right: 400),
+              //   child: Text(
+              //     'Video Title',
+              //     style: TextStyle(color: Colors.white),
+              //   ),
+              // ),
               Padding(
-                padding: EdgeInsets.only(right: 400),
+                padding: EdgeInsets.only(right: 390),
                 child: Text(
-                  'Video Title',
+                  'Text',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 450),
-                child: Text(
-                  'Message',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(right: 0),
+                padding: EdgeInsets.only(right: 65),
                 child: Text(
                   'Date',
                   style: TextStyle(color: Colors.white),

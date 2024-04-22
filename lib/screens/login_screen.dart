@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/auth_textfield.dart';
 import 'package:lipsyncvoice_app/components/next_btn.dart';
 import 'package:lipsyncvoice_app/components/password_textfield.dart';
+import 'package:lipsyncvoice_app/logic/database_helper.dart';
 import 'package:lipsyncvoice_app/logic/service_helper.dart';
+import 'package:lipsyncvoice_app/screens/homepage.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isSignIn = true;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: passwordController,
                             ),
                             NextButton(
+                              isLoading: isLoading,
                               isSign: isSignIn,
                               onPressed: isSignIn ? signIn: signUp,
                             ),
@@ -71,23 +75,55 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
     signUp() async {
+      setState(() {
+        isLoading = true;
+      });
+      final response = await DatabaseHelper().signUp(usernameController.text, passwordController.text);
+      if (response == true){
+        setState(() {
+        isLoading = false;
+      });
+       const snackBar = SnackBar(
+              content: Text('Account created succesfully!'),
+              duration: Duration(seconds: 2),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      else{
+        setState(() {
+        isLoading = false;
+      });
+        const snackBar = SnackBar(
+              content: Text('Error creating account'),
+              duration: Duration(seconds: 2),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
 
+    signIn() async {
+      setState(() {
+        isLoading = true;
+      });
+      final response = await DatabaseHelper().signIn(usernameController.text, passwordController.text);
+      if (response == true){
+        setState(() {
+        isLoading = false;
+      });
+        Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage(userId:DatabaseHelper().getUserId())));
+      }
+      else{
+        setState(() {
+        isLoading = false;
+      });
+       const snackBar = SnackBar(
+              content: Text('Error signing in'),
+              duration: Duration(seconds: 2),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
     
-
-    Future<Map<String, dynamic>> signIn() async {
-    try {
-      final response = await ServiceHelper()
-          .authenticate(usernameController.text, passwordController.text);
-      Map<String, dynamic> responseBody = jsonDecode(response.body);
-      usernameController.text = "";
-      passwordController.text = "";
-      return responseBody;
-    } on Exception catch (error) {
-      print(error);
-      return {"message": "An error occurred"};
-    }
-  }
 
   Widget signUpPrompt(){
    return Row(

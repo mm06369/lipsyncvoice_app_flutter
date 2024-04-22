@@ -8,11 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../utils/global_constants.dart';
 
 class HistoryContainer extends StatefulWidget {
-  const HistoryContainer({super.key, required this.serial, required this.videoName, required this.message, required this.date});
+  const HistoryContainer({super.key, required this.serial, required this.text, required this.date});
 
   final int serial;
-  final String videoName;
-  final String message;
+  // final String videoName;
+  final String text;
   final String date;
 
   @override
@@ -51,7 +51,7 @@ class _HistoryContainerState extends State<HistoryContainer> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 148),
+                  padding: const EdgeInsets.only(right: 390),
                   child: SizedBox(
                     width: 35,
                     child: Text(
@@ -62,26 +62,26 @@ class _HistoryContainerState extends State<HistoryContainer> {
                     ),
                 ),
     
-                Padding(
-                  padding: EdgeInsets.only(right: 25),
-                  child: SizedBox(
-                    width: 450,
-                    child: Text(
-                        widget.videoName,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-                      ),
-                  ),
-                ),
+                // Padding(
+                //   padding: EdgeInsets.only(right: 25),
+                //   child: SizedBox(
+                //     width: 450,
+                //     child: Text(
+                //         widget.videoName,
+                //         overflow: TextOverflow.ellipsis,
+                //         style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+                //       ),
+                //   ),
+                // ),
                 
                  Padding(
-                   padding: const EdgeInsets.only(right:130),
+                   padding: const EdgeInsets.only(right:120),
                    child: SizedBox(
                     width: 380,
                      child: Text(
-                        widget.message,
+                        widget.text,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.poppins(color: const Color.fromARGB(255, 94, 81, 81), fontWeight: FontWeight.w500),
                       ),
                    ),
                  ),

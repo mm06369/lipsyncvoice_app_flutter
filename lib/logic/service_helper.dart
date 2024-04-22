@@ -44,9 +44,9 @@ class ServiceHelper{
         );
         return response;
     }
-    catch(error){
+    on Exception catch(error){
       print(error);
-      return {'output': "error"};
+      rethrow;
     }
   }
 
