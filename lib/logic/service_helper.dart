@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
 
 
@@ -11,14 +12,12 @@ class ServiceHelper{
   String apiURL = "http://119.63.132.179:5000/";
   String runTestAPI = "runTest";
   String runRomanAPI = "runRoman";
-  String addMessageAPI = "add_message";
-  String authenticateAPI = 'authenticate';
-  String getHistoryAPI = 'get_history?user_id=';
 
   runTest(Uint8List videoData) async {
     try{
+      debugPrint("runTest API called");
       final response = await http.post(
-          Uri.parse(apiURL + runTestAPI),
+          Uri.parse('$apiURL$runTestAPI'),
           body: videoData,
           headers: {
             'Content-Type': 'video/mpg', 
@@ -27,16 +26,20 @@ class ServiceHelper{
         return response;
     }
     on Exception catch(error){
-      print("error");
+      debugPrint("Error in runTest function: ${error.toString()}");
+      rethrow;
+    }
+    catch(error) {
+      debugPrint("Error in runTest function: ${error.toString()}");
       rethrow;
     }
   }
 
   runRomanTest(Uint8List videoData) async {
-    print('api called -> runRomanTest called');
     try{
+      debugPrint("runRoman API called");
       final response = await http.post(
-          Uri.parse(apiURL + runRomanAPI),
+          Uri.parse('$apiURL$runRomanAPI'),
           body: videoData,
           headers: {
             'Content-Type': 'video/mp4', 
@@ -45,57 +48,13 @@ class ServiceHelper{
         return response;
     }
     on Exception catch(error){
-      print(error);
+      debugPrint("Error in runRoman function: ${error.toString()}");
       rethrow;
     }
     catch(error){
-      print(error);
+      debugPrint("Error in runRoman function: ${error.toString()}");
       rethrow;
     }
   }
 
-  addMessage(String name, String message, int userId) async {
-    try{
-      final response = await http.post(
-          Uri.parse(apiURL + addMessageAPI),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'name': name,
-            'message': message,
-            'user_id': userId
-          }),
-        );
-        return response;
-    }
-    on Exception catch(error){
-      rethrow;
-    }
-  }
-
-  authenticate(String email, String password) async {
-    try{
-    final response = await http.post(Uri.parse(apiURL + authenticateAPI),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'username': email,
-      'password': password
-    }),
-    );
-    return response;
-    }
-    on Exception catch(error){
-      rethrow;
-    }
-
-  }
-
-  getHistory(int userId) async {
-    try{
-      final response = await http.get(Uri.parse('$apiURL$getHistoryAPI$userId'));
-      return response;
-    }
-    on Exception catch(error){
-      rethrow;
-    }
-  }
 }

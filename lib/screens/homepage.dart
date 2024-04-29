@@ -44,7 +44,6 @@ class _HomePageState extends State<HomePage> {
   FlutterTts flutterTts = FlutterTts();
   TextEditingController generatedTextController = TextEditingController();
   String languageSelected = "None";
-  // bool recordingDone = false;
   bool showWebcam = false;
 
   @override
@@ -103,10 +102,14 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         if (showWebcam)
                           Webcam(
-                            onRecordingDone: languageSelected == 'Urdu' ? uploadurduVideo : uploadenglishVideo,
+                            onRecordingDone: languageSelected == 'Urdu'
+                                ? uploadUrduVid
+                                : uploadEnglishVid,
                             onRecordingStart: onProcessStart,
                           ),
-                        const SizedBox(height: 10,),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         if (showAdd && !showWebcam)
                           LanguageToggle(
                             btnSelected: "None",
@@ -133,20 +136,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  onProcessStart(){
+  onProcessStart() {
     setState(() {
       isVideoComplete = false;
       isVideoProcess = true;
     });
   }
 
-  getMessage(String message_){
+  getMessage(String message_) {
     setState(() {
-          isVideoComplete = true;
-          message = message_;
-          generatedTextController.text = message;
-          isVideoProcess = false;
-        });
+      isVideoComplete = true;
+      message = message_;
+      generatedTextController.text = message;
+      isVideoProcess = false;
+    });
   }
 
   void updateLanguage(String language) {
@@ -200,9 +203,9 @@ class _HomePageState extends State<HomePage> {
         isVideoProcess = true;
       });
       if (languageSelected == 'Urdu') {
-        uploadurduVideo(video!);
+        uploadUrduVid(video!);
       } else if (languageSelected == 'English') {
-        uploadenglishVideo(video!);
+        uploadEnglishVid(video!);
       }
     }
   }
@@ -302,25 +305,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget customMessageContainer(){
-     return Column(
+  Widget customMessageContainer() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-       children: [
+      children: [
         Text(
-              "The person in the video is saying: ",
-              style: GoogleFonts.poppins(color: Colors.black, fontSize: 15),
-            ),
-          const SizedBox(height: 5,),
-         CustomMessageContainer(message: message),
-       ],
-     );
+          "The person in the video is saying: ",
+          style: GoogleFonts.poppins(color: Colors.black, fontSize: 15),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        CustomMessageContainer(message: message),
+      ],
+    );
   }
 
   Widget audioContainer() {
     return Column(
       children: [
-        const SizedBox(height: 20,),
-        const Text("Generated Audio", style: TextStyle(fontSize: 25),),
+        const SizedBox(
+          height: 20,
+        ),
+        const Text(
+          "Generated Audio",
+          style: TextStyle(fontSize: 25),
+        ),
         if (isVideoComplete)
           const SizedBox(
             height: 10,
@@ -419,7 +429,6 @@ class _HomePageState extends State<HomePage> {
       showAdd = true;
       isVideoProcess = false;
       isVideoComplete = false;
-      // recordingDone = false;
     });
   }
 
@@ -429,75 +438,60 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void uploadenglishVideo(Uint8List videoData) async {
+  void uploadEnglishVid(Uint8List videoData) async {
+    String message = "";
     try {
       final response = await ServiceHelper().runTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         await DatabaseHelper().addMessage(widget.userId, data['output']);
-        setState(() {
-          isVideoComplete = true;
-          message = data['output'];
-          generatedTextController.text = message;
-          isVideoProcess = false;
-          // createHistory('combined.mpg', message);
-        });
-      }
-      else if (response.statusCode != 200){
-        setState(() {
-          isVideoComplete = true;
-          message = "Was not able to determine what the person was saying";
-          generatedTextController.text = message;
-          isVideoProcess = false;
-        });
+        message = data['output'];
+      } else if (response.statusCode != 200) {
+        message = "Was not able to determine what the person was saying";
       }
     } catch (error) {
-      print(error.toString());
+      message = "Was not able to determine what the person was saying";
+      debugPrint("Error in uploadEnglishVid: ${error.toString()}");
     }
+    setState(() {
+      isVideoComplete = true;
+      message = message;
+      generatedTextController.text = message;
+      isVideoProcess = false;
+    });
   }
 
-  void uploadurduVideo(Uint8List videoData) async {
-    print("urdu video uploaded -> uploadurduVideo called");
-      //  await Future.delayed(Duration(seconds: 2));
-      //  await DatabaseHelper().addMessage(widget.userId, "chai");
-      //  setState(() {
-      //     isVideoComplete = true;
-      //     message = 'chai';
-      //     generatedTextController.text = message;
-      //     isVideoProcess = false;
-      //   });
+  void uploadUrduVid(Uint8List videoData) async {
+    //  await Future.delayed(Duration(seconds: 2));
+    //  await DatabaseHelper().addMessage(widget.userId, "chai");
+    //  setState(() {
+    //     isVideoComplete = true;
+    //     message = 'chai';
+    //     generatedTextController.text = message;
+    //     isVideoProcess = false;
+    //   });
+    String message = "";
     try {
       final response = await ServiceHelper().runRomanTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data['output']);
         await DatabaseHelper().addMessage(widget.userId, data['output']);
-        setState(() {
-          isVideoComplete = true;
-          message = data['output'];
-          generatedTextController.text = message;
-          isVideoProcess = false;
-        });
-      }
-      else if (response.statusCode != 200){
-        setState(() {
-          isVideoComplete = true;
-          message = "Error: Was not able to determine what the person was saying";
-          generatedTextController.text = message;
-          isVideoProcess = false;
-        });
+        message = data['output'];
+      } else if (response.statusCode != 200) {
+        message = "Error: Was not able to determine what the person was saying";
       }
     } catch (error) {
-      setState(() {
-          isVideoComplete = true;
-          message = "Error: Was not able to determine what the person was saying";
-          generatedTextController.text = message;
-          isVideoProcess = false;
-        });
-      print(error.toString());
+      message = "Error: Was not able to determine what the person was saying";
+      debugPrint(error.toString());
     }
-  }
 
+    setState(() {
+      isVideoComplete = true;
+      message = message;
+      generatedTextController.text = message;
+      isVideoProcess = false;
+    });
+  }
 
   createDialog() {
     showDialog(

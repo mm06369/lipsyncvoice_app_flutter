@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:lipsyncvoice_app/logic/model/history_model.dart';
 
 class DatabaseHelper{
@@ -18,7 +18,7 @@ class DatabaseHelper{
       return historyList;
 
     } catch (e){
-      print(e);
+      debugPrint("Error in getHistory function: $e");
       return [];
     }
   }
@@ -34,23 +34,21 @@ class DatabaseHelper{
         'dateAdded': date.toString()
       });
     } catch (e) {
-      print(e);
+      debugPrint('Error in addMessage function: $e');
     }
   }
 
   signIn(String email, String password) async {
     try{
       final response = await auth.signInWithEmailAndPassword(email: email , password: password);
-      print("checking");
       if (response.user != null){
-        print("checked");
         return true;
       }
     } on FirebaseException catch(e){
-      print(e);
+      debugPrint('Firebase Error SignIn: ${e.code} - ${e.message}');
       return false;
-    } catch (e){
-      print(e);
+    } catch (e, stackTrace){
+      debugPrint('Unexpected Error SignIn: $e\n$stackTrace');
       return false;
     }
   }
@@ -62,10 +60,10 @@ class DatabaseHelper{
         return true;
       }
     } on FirebaseException catch(e){
-      print(e);
+      debugPrint('Firebase Error SignUp: ${e.code} - ${e.message}');
       return false;
-    } catch (e){
-      print(e);
+    } catch (e, stackTrace){
+      debugPrint('Unexpected Error SignUp: $e\n$stackTrace');
       return false;
     }
   }

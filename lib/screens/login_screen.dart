@@ -58,9 +58,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             NextButton(
                               isLoading: isLoading,
                               isSign: isSignIn,
-                              onPressed: isSignIn ? signIn: signUp,
+                              onPressed: isSignIn ? signIn : signUp,
                             ),
-                            const SizedBox(height: 20,),
+                            const SizedBox(
+                              height: 20,
+                            ),
                             signUpPrompt()
                           ],
                         )),
@@ -74,60 +76,77 @@ class _LoginScreenState extends State<LoginScreen> {
         bottomNavigationBar: bottomText());
   }
 
-    signUp() async {
+  signUp() async {
+    String message = "";
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await DatabaseHelper()
+        .signUp(usernameController.text, passwordController.text);
+
+    if (response == true) {
       setState(() {
-        isLoading = true;
-      });
-      final response = await DatabaseHelper().signUp(usernameController.text, passwordController.text);
-      if (response == true){
-        setState(() {
         isLoading = false;
       });
-       const snackBar = SnackBar(
-              content: Text('Account created succesfully!'),
-              duration: Duration(seconds: 2),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
-      else{
-        setState(() {
+      message = "Account Created Successfully!";
+    } else {
+      setState(() {
         isLoading = false;
       });
-        const snackBar = SnackBar(
-              content: Text('Error creating account'),
-              duration: Duration(seconds: 2),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      }
+      message = "Error Creating Account";
     }
 
-    signIn() async {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 2),
+    );
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  signIn() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await DatabaseHelper()
+        .signIn(usernameController.text, passwordController.text);
+
+    if (response == true) {
       setState(() {
-        isLoading = true;
-      });
-      final response = await DatabaseHelper().signIn(usernameController.text, passwordController.text);
-      if (response == true){
-        setState(() {
         isLoading = false;
       });
-        Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage(userId:DatabaseHelper().getUserId())));
+
+      if (context.mounted) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) =>
+                    HomePage(userId: DatabaseHelper().getUserId())));
       }
-      else{
-        setState(() {
+    } else {
+      setState(() {
         isLoading = false;
       });
-       const snackBar = SnackBar(
-              content: Text('Error signing in'),
-              duration: Duration(seconds: 2),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+      const snackBar = SnackBar(
+        content: Text('Error signing in'),
+        duration: Duration(seconds: 2),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
-    
+  }
 
-  Widget signUpPrompt(){
-   return Row(
-      mainAxisSize: MainAxisSize.min, 
+  Widget signUpPrompt() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           "Don't have an account? ",
@@ -144,28 +163,23 @@ class _LoginScreenState extends State<LoginScreen> {
             });
           },
           style: TextButton.styleFrom(
-            padding: EdgeInsets.zero, 
-            minimumSize: Size.zero, 
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
-            isSignIn ? 'Sign up': 'Sign in',
+            isSignIn ? 'Sign up' : 'Sign in',
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 12,
-              color: Colors.blue, 
+              color: Colors.blue,
             ),
           ),
         ),
       ],
     );
+  }
 }
-
-
-}
-
-
-
 
 Widget headingText() {
   return Text(
@@ -202,8 +216,6 @@ Widget welcomeText() {
     ),
   ]);
 }
-
-
 
 Widget bottomText() {
   return Padding(
