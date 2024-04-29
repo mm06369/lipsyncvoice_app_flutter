@@ -1,12 +1,11 @@
-import 'dart:convert';
+
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:ui_web' as ui;
 import 'dart:js' as js;
-
 import 'package:flutter/material.dart';
-import 'package:lipsyncvoice_app/logic/service_helper.dart';
 
+// ignore: must_be_immutable
 class Webcam extends StatefulWidget {
   
   bool recordingDone;
@@ -101,15 +100,6 @@ class _WebcamState extends State<Webcam> {
                 if (widget.onRecordingDone != null){
                   widget.onRecordingDone!(bytes);
                 }
-                // if (response.statusCode == 200) {
-                //   final data = json.decode(response.body);
-                //   if (widget.onRecordingDone != null){
-                //     widget.onRecordingDone!(data['output']);
-                //   }
-                //   // setState(() {
-                //   //   print("data: ${data['output']}");
-                //   // });
-                // }
               } catch (error) {
                 print(error.toString());
               }

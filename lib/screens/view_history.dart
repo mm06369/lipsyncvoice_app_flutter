@@ -80,7 +80,6 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
           itemBuilder: (context, index) {
             return HistoryContainer(
                 serial: index,
-                // videoName: historyList[index]['name'],
                 text: historyList[index].text ?? "Error",
                 date: historyList[index].dateAdded ?? "Error");
           }),

@@ -11,7 +11,6 @@ class HistoryContainer extends StatefulWidget {
   const HistoryContainer({super.key, required this.serial, required this.text, required this.date});
 
   final int serial;
-  // final String videoName;
   final String text;
   final String date;
 
@@ -81,7 +80,7 @@ class _HistoryContainerState extends State<HistoryContainer> {
                      child: Text(
                         widget.text,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(color: const Color.fromARGB(255, 94, 81, 81), fontWeight: FontWeight.w500),
+                        style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
                       ),
                    ),
                  ),

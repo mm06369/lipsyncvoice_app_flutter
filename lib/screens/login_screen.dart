@@ -6,9 +6,10 @@ import 'package:lipsyncvoice_app/components/auth_textfield.dart';
 import 'package:lipsyncvoice_app/components/next_btn.dart';
 import 'package:lipsyncvoice_app/components/password_textfield.dart';
 import 'package:lipsyncvoice_app/logic/database_helper.dart';
-import 'package:lipsyncvoice_app/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/screens/homepage.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
+import 'package:universal_html/html.dart' as html;
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -76,6 +77,11 @@ class _LoginScreenState extends State<LoginScreen> {
         bottomNavigationBar: bottomText());
   }
 
+  clearControllers(){
+    usernameController.clear();
+    passwordController.clear();
+  }
+
   signUp() async {
     String message = "";
 
@@ -108,6 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void storeData(String key, String value) {
+    html.window.localStorage[key] = value;
+}
+
   signIn() async {
     setState(() {
       isLoading = true;
@@ -120,6 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLoading = false;
       });
+
+    storeData('isLogin', 'True');
+    storeData('ID', DatabaseHelper().getUserId());
+    clearControllers();
 
       if (context.mounted) {
         Navigator.push(

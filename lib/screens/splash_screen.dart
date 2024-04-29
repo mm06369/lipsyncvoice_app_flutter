@@ -1,8 +1,13 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:lipsyncvoice_app/screens/homepage.dart';
 import 'package:lipsyncvoice_app/screens/login_screen.dart';
+import 'package:universal_html/html.dart' as html;
+
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -15,14 +20,27 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   bool showSecondText = false;
-  bool finished = false;
+
+  String? retrieveData(String key) {
+    return html.window.localStorage[key];
+  }
 
   _navigateToHome() async {
-    await Future.delayed(const Duration(seconds: 5));
+    
+    String isLogin = retrieveData('isLogin') ?? 'False';
+    print(retrieveData('isLogin'));  
+    print(isLogin);
+    
+    await Future.delayed(const Duration(seconds: 5)); 
+
     if (context.mounted) {
-      if (finished) {
+      if (isLogin == 'False') {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => LoginScreen()));
+            context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      } else if (isLogin == 'True'){
+        String userId = retrieveData('ID') ?? '';
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomePage(userId: userId,)));
       }
     }
   }
@@ -57,8 +75,9 @@ class _SplashScreenState extends State<SplashScreen> {
             if (showSecondText)
               AnimatedTextKit(
                 onFinished: () {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()));
+                  _navigateToHome();
+                  // Navigator.pushReplacement(context,
+                  //     MaterialPageRoute(builder: (context) => LoginScreen()));
                 },
                 animatedTexts: [
                   TypewriterAnimatedText(

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/screens/about_us.dart';
 import 'package:lipsyncvoice_app/screens/demo_page.dart';
 import 'package:lipsyncvoice_app/utils/global_constants.dart';
+import 'package:universal_html/html.dart' as html;
 
 // ignore: must_be_immutable
 class PageHeader extends StatefulWidget {
@@ -17,6 +18,10 @@ class PageHeader extends StatefulWidget {
 
 class _PageHeaderState extends State<PageHeader> {
   bool arrowPressed = false;
+
+  void removeData(String key) {
+  html.window.localStorage.remove(key);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +109,8 @@ class _PageHeaderState extends State<PageHeader> {
                         if (value != null) {
                           if (value == "Sign Out") {
                             Navigator.of(context).pop();
+                            removeData('ID');
+                            removeData('isLogin');
                           }
                         }
                         await Future.delayed(const Duration(milliseconds: 100));
