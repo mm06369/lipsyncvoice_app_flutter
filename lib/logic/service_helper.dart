@@ -33,7 +33,7 @@ class ServiceHelper{
   }
 
   runRomanTest(Uint8List videoData) async {
-    print('runroman called');
+    print('api called -> runRomanTest called');
     try{
       final response = await http.post(
           Uri.parse(apiURL + runRomanAPI),
@@ -45,6 +45,10 @@ class ServiceHelper{
         return response;
     }
     on Exception catch(error){
+      print(error);
+      rethrow;
+    }
+    catch(error){
       print(error);
       rethrow;
     }

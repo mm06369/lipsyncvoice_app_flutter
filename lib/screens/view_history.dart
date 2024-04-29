@@ -55,8 +55,13 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
           const HistoryLabel(),
           if (!isLoading) showHistoryList(),
           if (isLoading)
-            const CircularProgressIndicator(
-              color: Colors.black,
+            Container(
+              margin: EdgeInsets.only(top: 50),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.black,
+                ),
+              ),
             )
         ],
       ),

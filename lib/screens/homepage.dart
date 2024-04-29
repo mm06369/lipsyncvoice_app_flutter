@@ -194,16 +194,16 @@ class _HomePageState extends State<HomePage> {
     if (languageSelected == 'None') {
       createDialog();
     } else {
-      await ImagePickerWeb.getVideoAsBytes().then((value) => {
-            setState(() {
-              showAdd = false;
-              isVideoProcess = true;
-            }),
-            if (languageSelected == 'Urdu')
-              {uploadurduVideo(value!)}
-            else
-              {uploadenglishVideo(value!)}
-          });
+      final video = await ImagePickerWeb.getVideoAsBytes();
+      setState(() {
+        showAdd = false;
+        isVideoProcess = true;
+      });
+      if (languageSelected == 'Urdu') {
+        uploadurduVideo(video!);
+      } else if (languageSelected == 'English') {
+        uploadenglishVideo(video!);
+      }
     }
   }
 
@@ -457,10 +457,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void uploadurduVideo(Uint8List videoData) async {
+    print("urdu video uploaded -> uploadurduVideo called");
+      //  await Future.delayed(Duration(seconds: 2));
+      //  await DatabaseHelper().addMessage(widget.userId, "chai");
+      //  setState(() {
+      //     isVideoComplete = true;
+      //     message = 'chai';
+      //     generatedTextController.text = message;
+      //     isVideoProcess = false;
+      //   });
     try {
       final response = await ServiceHelper().runRomanTest(videoData);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print(data['output']);
         await DatabaseHelper().addMessage(widget.userId, data['output']);
         setState(() {
           isVideoComplete = true;
