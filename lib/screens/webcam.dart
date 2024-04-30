@@ -1,7 +1,9 @@
 
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:ui_web' as ui;
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:js' as js;
 import 'package:flutter/material.dart';
 
@@ -66,7 +68,7 @@ class _WebcamState extends State<Webcam> {
     _recorder.addEventListener('stop', (event) {
       stream.getTracks().forEach((track) {
         if (track.readyState == 'live') {
-          print("track stopped");
+          debugPrint("Track Stopped");
           track.stop();
         }
       });
@@ -81,7 +83,7 @@ class _WebcamState extends State<Webcam> {
     _recorder.addEventListener('stop', (event) {
       final url = html.Url.createObjectUrl(blob);
       _result.src = url;
-      print(url);
+      debugPrint("URL of recorded video: $url");
 
       html.HttpRequest.request(url, responseType: 'blob')
           .then((html.HttpRequest request) async  {
@@ -101,7 +103,7 @@ class _WebcamState extends State<Webcam> {
                   widget.onRecordingDone!(bytes);
                 }
               } catch (error) {
-                print(error.toString());
+                debugPrint(error.toString());
               }
 
             }
@@ -169,16 +171,6 @@ class _WebcamState extends State<Webcam> {
                 child: Image.asset("assets/stop_btn.png", width: 40, height: 40,)),
             ],
           ),
-                    // ElevatedButton(
-          //   onPressed: () async {
-          //     final html.MediaStream? stream = await _openWebcam();
-          //     startRecording(stream!);
-          //   },
-          //   child: const Text('Start Recording'),
-          // ),
-          // const SizedBox(
-          //   height: 10,
-          // ),
         ],
     );
   }

@@ -1,15 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lipsyncvoice_app/components/history_container.dart';
 import 'package:lipsyncvoice_app/components/history_label.dart';
 import 'package:lipsyncvoice_app/logic/database_helper.dart';
 import 'package:lipsyncvoice_app/logic/model/history_model.dart';
-import 'package:lipsyncvoice_app/logic/service_helper.dart';
 import 'package:lipsyncvoice_app/screens/login_screen.dart';
-import 'package:http/http.dart' as http;
 import '../utils/global_constants.dart';
+import 'package:universal_html/html.dart' as html;
 
 class ViewHistoryPage extends StatefulWidget {
   final String userId;
@@ -32,9 +29,12 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
     setState(() {
       isLoading = false;
     });
-    // }
   }
-  
+
+  void removeData(String key) {
+    html.window.localStorage.remove(key);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +56,7 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
           if (!isLoading) showHistoryList(),
           if (isLoading)
             Container(
-              margin: EdgeInsets.only(top: 50),
+              margin: const EdgeInsets.only(top: 50),
               child: const Center(
                 child: CircularProgressIndicator(
                   color: Colors.black,
@@ -80,8 +80,8 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
           itemBuilder: (context, index) {
             return HistoryContainer(
                 serial: index,
-                text: historyList[index].text ?? "Error",
-                date: historyList[index].dateAdded ?? "Error");
+                text: historyList[index].text ?? "Cannot Load the data",
+                date: historyList[index].dateAdded ?? "00-00-00 00:00:00");
           }),
     );
   }
@@ -173,11 +173,18 @@ class _ViewHistoryPageState extends State<ViewHistoryPage> {
                         ],
                       ).then((value) async {
                         if (value != null) {
-                          if (value == "Sign Out") {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => LoginScreen()));
+                          DatabaseHelper().signOut();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LoginScreen()),
+                          );
+                          try {
+                            removeData('isLogin');
+                            removeData('ID');
+                          } catch (e) {
+                            debugPrint(
+                                "Cannot remove the fields from storage: ${e.toString()}");
                           }
                         }
                         await Future.delayed(const Duration(milliseconds: 100));

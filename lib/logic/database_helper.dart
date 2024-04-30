@@ -68,6 +68,16 @@ class DatabaseHelper{
     }
   }
 
+  signOut() async {
+    try{
+      await auth.signOut();
+    } on FirebaseException catch(e){
+      debugPrint("Error signing out from application: ${e.toString()}");
+    } catch (e) {
+      debugPrint("Error signing out from application: ${e.toString()}");
+    }
+  }
+
   getUserId(){
     return auth.currentUser!.uid;
   }

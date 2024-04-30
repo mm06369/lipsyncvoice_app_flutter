@@ -15,7 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    _navigateToHome();
+    // _navigateToHome();
     super.initState();
   }
 
@@ -28,17 +28,15 @@ class _SplashScreenState extends State<SplashScreen> {
   _navigateToHome() async {
     
     String isLogin = retrieveData('isLogin') ?? 'False';
-    print(retrieveData('isLogin'));  
-    print(isLogin);
-    
+    debugPrint("IsLogin Status: $isLogin");   
     await Future.delayed(const Duration(seconds: 5)); 
-
     if (context.mounted) {
       if (isLogin == 'False') {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => const LoginScreen()));
       } else if (isLogin == 'True'){
         String userId = retrieveData('ID') ?? '';
+        debugPrint("ID at Login: $userId");  
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => HomePage(userId: userId,)));
       }
@@ -76,8 +74,6 @@ class _SplashScreenState extends State<SplashScreen> {
               AnimatedTextKit(
                 onFinished: () {
                   _navigateToHome();
-                  // Navigator.pushReplacement(context,
-                  //     MaterialPageRoute(builder: (context) => LoginScreen()));
                 },
                 animatedTexts: [
                   TypewriterAnimatedText(

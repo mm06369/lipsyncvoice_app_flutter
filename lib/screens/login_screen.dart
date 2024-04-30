@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLoading = false;
       });
-      message = "Error Creating Account";
+      message = "Not able to create account";
     }
 
     final snackBar = SnackBar(
@@ -126,14 +126,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await DatabaseHelper()
         .signIn(usernameController.text, passwordController.text);
 
-    if (response == true) {
+    try{
+      storeData('isLogin', 'True');
+      storeData('ID', DatabaseHelper().getUserId());
+    } catch (e){
+      debugPrint(e.toString());
+    }
+    
+    clearControllers();
+
+        if (response == true) {
       setState(() {
         isLoading = false;
       });
-
-    storeData('isLogin', 'True');
-    storeData('ID', DatabaseHelper().getUserId());
-    clearControllers();
 
       if (context.mounted) {
         Navigator.push(
@@ -148,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       const snackBar = SnackBar(
-        content: Text('Error signing in'),
+        content: Text('Username or password not recognized'),
         duration: Duration(seconds: 2),
       );
 
